@@ -28,7 +28,7 @@ class MainActivity : Activity() {
 
         realm = Realm.getDefaultInstance()
 
-        ThingRealmAdapter.createFakes(10000, realm)
+//        ThingRealmAdapter.createFakes(10000, realm)
         adapter = ThingRealmAdapter(realm.where(Thing::class.java).findAll())
 
         thingRecycler.adapter = adapter
