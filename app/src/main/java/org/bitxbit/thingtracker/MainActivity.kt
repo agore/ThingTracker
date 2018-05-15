@@ -29,7 +29,7 @@ class MainActivity : Activity() {
         realm = Realm.getDefaultInstance()
 
 //        ThingRealmAdapter.createFakes(10000, realm)
-        adapter = ThingRealmAdapter(realm.where(Thing::class.java).findAll())
+        adapter = ThingRealmAdapter(this, realm.where(Thing::class.java).findAll())
 
         thingRecycler.adapter = adapter
         thingRecycler.addItemDecoration(SpaceItemDecoration())
@@ -38,6 +38,7 @@ class MainActivity : Activity() {
         val fab = findViewById<FloatingActionButton>(R.id.fab)
         fab.setOnClickListener {
             val intent = Intent(this, DataEntryActivity::class.java)
+            intent.putExtra(DataEntryActivity.ITEM_ID, 1L)
             startActivity(intent)
         }
     }

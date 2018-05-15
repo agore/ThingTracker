@@ -17,5 +17,7 @@
         </activity>
 
         <activity android:name=".DataEntryActivity" />
+
+        <activity android:name=".ThingDetailActivity" />
     </application>
 </manifest>
