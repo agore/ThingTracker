@@ -27,21 +27,33 @@ class DataEntryActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.data_entry_activity)
 
-        val itemId : Long = intent.extras.getLong(ITEM_ID)
+        val itemId : Long? = intent?.extras?.getLong(ITEM_ID)
 
         realm = Realm.getDefaultInstance()
         editKeyName = findViewById<EditText>(R.id.edit_key_name)
         editKeyValue = findViewById<EditText>(R.id.edit_key_val)
         radioType = findViewById<RadioGroup>(R.id.radiogroup_type)
 
-        val savedThing: Thing? = if (itemId != null) fillForm(itemId) else null
+        val managedThing: Thing? = if (itemId != null) fillForm(itemId) else null
 
         val btnSave = findViewById<Button>(R.id.btn_save)
         btnSave.setOnClickListener({
             val name = editKeyName.text.toString()
             val value = editKeyValue.text.toString()
             val checkedBtnId = radioType.checkedRadioButtonId
-            val thing: Thing = if (savedThing != null) savedThing else
+            if (managedThing != null) {
+                updateThing(managedThing, name, checkedBtnId, value)
+            } else {
+                createNewThing(checkedBtnId, name, value)
+            }
+
+            Toast.makeText(it.context, "Saved!", Toast.LENGTH_SHORT).show()
+            finish()
+        })
+    }
+
+    private fun createNewThing(checkedBtnId: Int, name: String, value: String) {
+        val thing: Thing =
                 when (checkedBtnId) {
                     R.id.radio_bool ->
                         Thing(0, name, "", -1, value.toBoolean(), Date(), "BOOL")
@@ -51,21 +63,27 @@ class DataEntryActivity : Activity() {
                         Thing(0, name, value, -1, false, Date(), "STRING")
                 }
 
-            Log.i(TAG, thing.toString())
+        Log.i(TAG, thing.toString())
 
-            realm.executeTransaction {
-                if (thing.id == null) {
-                    val id: Number? = it.where(Thing::class.java).max("id")
-                    val nextId = if (id == null) 0 else (id.toLong() + 1)
-                    thing.id = nextId
-                }
-
-                it.copyToRealm(thing)
+        realm.executeTransaction {
+            if (thing.id == 0L) {
+                val id: Number? = it.where(Thing::class.java).max("id")
+                val nextId = if (id == null) 0 else (id.toLong() + 1)
+                thing.id = nextId
             }
+            it.copyToRealm(thing)
+        }
+    }
 
-            Toast.makeText(it.context, "Saved!", Toast.LENGTH_SHORT).show()
-            finish()
-        })
+    private fun updateThing(savedThing: Thing, name: String, checkedBtnId: Int, value: String) {
+        realm.executeTransaction {
+            savedThing.name = name
+            when (checkedBtnId) {
+                R.id.radio_bool -> savedThing.boolVal = value.toBoolean()
+                R.id.radio_int -> savedThing.intVal = value.toInt()
+                R.id.radio_string -> savedThing.strVal = value
+            }
+        }
     }
 
     private fun fillForm(itemId: Long) : Thing? {
@@ -76,11 +94,11 @@ class DataEntryActivity : Activity() {
             var checkedBtnId : Int
             when (record?.type) {
                 ThingType.BOOL -> {
-                    editKeyValue.setText(record?.boolVal as String)
+                    editKeyValue.setText(record?.boolVal.toString())
                     checkedBtnId = R.id.radio_bool
                 }
                 ThingType.INT -> {
-                    editKeyValue.setText(record?.intVal as String)
+                    editKeyValue.setText(record?.intVal.toString())
                     checkedBtnId = R.id.radio_int
                 }
                 else -> {
