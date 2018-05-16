@@ -9,6 +9,8 @@ import io.realm.Realm
 import io.realm.RealmRecyclerViewAdapter
 import io.realm.kotlin.createObject
 import org.bitxbit.thingtracker.model.Thing
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ThingRealmAdapter(act: MainActivity, data: OrderedRealmCollection<Thing>, autoUpdate: Boolean = true):
         RealmRecyclerViewAdapter<Thing, ThingViewHolder>(data, autoUpdate) {
@@ -21,7 +23,7 @@ class ThingRealmAdapter(act: MainActivity, data: OrderedRealmCollection<Thing>, 
 
     override fun onBindViewHolder(holder: ThingViewHolder, position: Int) {
         val t: Thing? = getItem(position)
-        holder.tv.text = t.toString()
+        holder.tv.text = "${formatDate(t?.date)} [${t?.type}] ${t?.name}"
         holder.itemView.setOnClickListener {
             val intent = Intent(activity.applicationContext, ThingDetailActivity::class.java)
             intent.putExtra("thingName", t?.name)
@@ -40,6 +42,8 @@ class ThingRealmAdapter(act: MainActivity, data: OrderedRealmCollection<Thing>, 
 
             }
         }
+
+        fun formatDate(d: Date?) = SimpleDateFormat("M/d/yyyy").format(d)
     }
 
 }
