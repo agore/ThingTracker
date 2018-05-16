@@ -1,20 +1,26 @@
 package org.bitxbit.thingtracker
 
+import android.app.Activity
+import android.content.Intent
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import io.realm.OrderedRealmCollection
 import io.realm.Realm
 import io.realm.RealmRecyclerViewAdapter
 import io.realm.kotlin.createObject
 import org.bitxbit.thingtracker.model.Thing
-import java.text.DateFormat
+import org.bitxbit.thingtracker.model.ThingType
 import java.text.SimpleDateFormat
 
-class ThingDetailRealmAdapter(data: OrderedRealmCollection<Thing>):
-        RealmRecyclerViewAdapter<Thing, ThingDetailViewHolder>(data, false) {
+
+class ThingDetailRealmAdapter(val activity: ThingDetailActivity, data: OrderedRealmCollection<Thing>):
+        RealmRecyclerViewAdapter<Thing, ThingDetailViewHolder>(data, true) {
+
     init {
         setHasStableIds(true)
     }
@@ -23,9 +29,7 @@ class ThingDetailRealmAdapter(data: OrderedRealmCollection<Thing>):
 
     override fun onBindViewHolder(holder: ThingDetailViewHolder, position: Int) {
         val t = getItem(position)
-        val fmt : SimpleDateFormat = SimpleDateFormat("M/d/Y hh:mm:ss")
-        holder.tvDate.text = fmt.format(t?.date)
-        holder.tvVal.text = t?.strVal
+        holder.bind(t!!, activity)
     }
 
     override fun getItemId(position: Int): Long = getItem(position)!!.id
@@ -44,6 +48,20 @@ class ThingDetailRealmAdapter(data: OrderedRealmCollection<Thing>):
 }
 
 class ThingDetailViewHolder(val cell: View) : RecyclerView.ViewHolder(cell) {
-    var tvDate : TextView = cell.findViewById<TextView>(R.id.txt_date)
-    var tvVal : TextView = cell.findViewById<TextView>(R.id.txt_val)
+    val fmt = SimpleDateFormat("M/d/Y hh:mm:ss")
+    fun bind(t: Thing, act: Activity) {
+        itemView.findViewById<TextView>(R.id.txt_date).text = fmt.format(t.date)
+        itemView.findViewById<TextView>(R.id.txt_val).text =
+            when (t.type) {
+                ThingType.INT -> t.intVal.toString()
+                ThingType.BOOL -> t.boolVal.toString()
+                else -> t.strVal
+            }
+
+        itemView.findViewById<ImageButton>(R.id.btn_save).setOnClickListener {
+            val intent = Intent(act,  DataEntryActivity::class.java)
+            intent.putExtra(DataEntryActivity.ITEM_ID, t.id)
+            act.startActivity(intent)
+        }
+    }
 }
