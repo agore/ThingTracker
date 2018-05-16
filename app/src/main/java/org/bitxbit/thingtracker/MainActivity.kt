@@ -9,6 +9,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import io.realm.Realm
+import io.realm.Sort
 import org.bitxbit.thingtracker.model.Thing
 import org.bitxbit.thingtracker.model.ThingType
 import java.util.*
@@ -29,7 +30,7 @@ class MainActivity : Activity() {
         realm = Realm.getDefaultInstance()
 
 //        ThingRealmAdapter.createFakes(10000, realm)
-        adapter = ThingRealmAdapter(this, realm.where(Thing::class.java).findAll())
+        adapter = ThingRealmAdapter(this, realm.where(Thing::class.java).distinct("name").findAll().sort("date", Sort.DESCENDING))
 
         thingRecycler.adapter = adapter
         thingRecycler.addItemDecoration(SpaceItemDecoration())
@@ -38,7 +39,6 @@ class MainActivity : Activity() {
         val fab = findViewById<FloatingActionButton>(R.id.fab)
         fab.setOnClickListener {
             val intent = Intent(this, DataEntryActivity::class.java)
-            intent.putExtra(DataEntryActivity.ITEM_ID, 1L)
             startActivity(intent)
         }
     }
