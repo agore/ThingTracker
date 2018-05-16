@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import io.realm.Realm
+import io.realm.Sort
 import org.bitxbit.thingtracker.model.Thing
 
 class ThingDetailActivity : Activity() {
@@ -22,7 +23,9 @@ class ThingDetailActivity : Activity() {
 
         val thingName = intent?.getStringExtra("thingName")
         if (thingName != null) {
-            adapter = ThingDetailRealmAdapter(realm.where(Thing::class.java).beginsWith("name", thingName).findAll())
+            adapter = ThingDetailRealmAdapter(this,
+                    realm.where(Thing::class.java).beginsWith("name", thingName)
+                            .findAll().sort("date", Sort.DESCENDING))
             recycler.adapter = adapter
         }
 
