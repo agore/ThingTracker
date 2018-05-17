@@ -6,6 +6,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import io.realm.Realm
 import io.realm.Sort
+import org.bitxbit.thingtracker.adapter.ThingDetailRealmAdapter
 import org.bitxbit.thingtracker.model.Thing
 
 class ThingDetailActivity : Activity() {

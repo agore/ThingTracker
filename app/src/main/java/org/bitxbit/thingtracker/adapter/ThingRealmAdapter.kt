@@ -1,4 +1,4 @@
-package org.bitxbit.thingtracker
+package org.bitxbit.thingtracker.adapter
 
 import android.content.Intent
 import android.support.v7.widget.RecyclerView
@@ -8,6 +8,8 @@ import io.realm.OrderedRealmCollection
 import io.realm.Realm
 import io.realm.RealmRecyclerViewAdapter
 import io.realm.kotlin.createObject
+import org.bitxbit.thingtracker.MainActivity
+import org.bitxbit.thingtracker.ThingDetailActivity
 import org.bitxbit.thingtracker.model.Thing
 import java.text.SimpleDateFormat
 import java.util.*

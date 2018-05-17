@@ -1,4 +1,4 @@
-package org.bitxbit.thingtracker
+package org.bitxbit.thingtracker.adapter
 
 import android.support.v7.widget.RecyclerView
 import android.view.ViewGroup

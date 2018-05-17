@@ -10,8 +10,8 @@ import android.support.v7.widget.RecyclerView
 import android.view.View
 import io.realm.Realm
 import io.realm.Sort
+import org.bitxbit.thingtracker.adapter.ThingRealmAdapter
 import org.bitxbit.thingtracker.model.Thing
-import org.bitxbit.thingtracker.model.ThingType
 import java.util.*
 
 class MainActivity : Activity() {
