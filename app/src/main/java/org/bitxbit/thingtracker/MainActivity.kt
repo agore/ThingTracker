@@ -7,11 +7,14 @@ import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+//import android.support.v7.widget.helper.ItemTouchHelper
 import android.view.View
 import io.realm.Realm
+//import io.realm.RealmConfiguration
 import io.realm.Sort
 import org.bitxbit.thingtracker.adapter.ThingRealmAdapter
 import org.bitxbit.thingtracker.model.Thing
+//import org.bitxbit.thingtracker.model.ThingType
 import java.util.*
 
 class MainActivity : Activity() {
@@ -25,15 +28,25 @@ class MainActivity : Activity() {
 
         val thingRecycler = findViewById(R.id.recycler_things) as RecyclerView
         thingRecycler.layoutManager = LinearLayoutManager(this)
-//        adapter = ThingAdapter(createThings(100))
+
 
         realm = Realm.getDefaultInstance()
 
-//        ThingRealmAdapter.createFakes(10000, realm)
+
         adapter = ThingRealmAdapter(this, realm.where(Thing::class.java).distinct("name").findAll().sort("date", Sort.DESCENDING))
 
         thingRecycler.adapter = adapter
         thingRecycler.addItemDecoration(SpaceItemDecoration())
+
+//        val swipeHandler = object : SwipeToDeleteCallback(this.applicationContext) {
+//            override fun onSwiped(viewHolder: RecyclerView.ViewHolder?, direction: Int) {
+//                val adapter = thingRecycler.adapter as ThingRealmAdapter
+//                adapter.removeAt(viewHolder!!.adapterPosition)
+//            }
+//        }
+//
+//        val itemTouchHelper = ItemTouchHelper(swipeHandler)
+//        itemTouchHelper.attachToRecyclerView(thingRecycler)
 
 
         val fab = findViewById<FloatingActionButton>(R.id.fab)
@@ -42,17 +55,6 @@ class MainActivity : Activity() {
             startActivity(intent)
         }
     }
-
-    private fun createThings(howMany: Int) : List<Thing> {
-        val strings = listOf("A", "B", "C", "D")
-        val rand = Random()
-        val things = MutableList<Thing>(howMany) {
-            Thing()
-        }
-
-        return things
-    }
-
 
     class SpaceItemDecoration : RecyclerView.ItemDecoration() {
         override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State?) {
