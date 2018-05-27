@@ -97,6 +97,8 @@ class DataEntryActivity : Activity() {
     private fun fillFormWithThing(itemId: Long?) : Thing? {
         var record: Thing? = null
 
+        if (itemId == null) return record
+
         realm.executeTransaction {
             record = it.where(Thing::class.java).equalTo("id", itemId).findFirst()
             editKeyName.setText(record?.name)
