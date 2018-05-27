@@ -1,0 +1,10 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.bitxbit.thingtracker">
+
+    <application
+        android:label="test"
+        android:name="org.bitxbit.thingtracker.ThingTrackerAppTest">
+
+
+    </application>
+</manifest>

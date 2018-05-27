@@ -15,7 +15,8 @@ android {
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+//        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "org.bitxbit.thingtracker.CustomJUnitRunner"
     }
     buildTypes {
         release {
@@ -36,4 +37,5 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:27.1.0'
     implementation 'com.android.support:design:27.1.0'
     implementation 'io.realm:android-adapters:2.1.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-contrib:3.0.1'
 }
