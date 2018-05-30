@@ -3,130 +3,141 @@ package org.bitxbit.thingtracker
 import android.app.Activity
 import android.os.Bundle
 import android.util.Log
-import android.widget.*
-import io.realm.Realm
+import android.widget.Button
+import android.widget.EditText
+import android.widget.RadioGroup
+import android.widget.Toast
+import org.bitxbit.thingtracker.model.Dao
 import org.bitxbit.thingtracker.model.Thing
 import org.bitxbit.thingtracker.model.ThingType
 import java.util.*
 
-class DataEntryActivity : Activity() {
+class DataEntryActivity() : Activity() {
 
     companion object {
         val TAG: String = "ThingTracker"
         val ITEM_ID : String = "ITEM_ID"
         val ITEM_NAME : String = "ITEM_NAME"
         val ITEM_TYPE : String = "ITEM_TYPE"
+//        val ITEM_VAL : String = "ITEM_VAL"
     }
 
-    private lateinit var realm : Realm
     private lateinit var editKeyName : EditText
     private lateinit var editKeyValue : EditText
     private lateinit var radioType : RadioGroup
+    private var itemId: Long = 0L
+    private lateinit var dao: Dao
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.data_entry_activity)
 
-        val itemId : Long? = intent?.extras?.getLong(ITEM_ID)
-        var itemName : String? = null
+        dao = Dao()
+
+        var id = intent?.extras?.getLong(ITEM_ID)
+        if (id != null) itemId = id!!
+
+        var itemName : String? = ""
         var itemType : ThingType? = null
+        var itemVal : String? = ""
         if (itemId == 0L) {
-             itemName = intent?.extras?.getString(ITEM_NAME)
-             itemType = intent?.extras?.getSerializable(ITEM_TYPE) as ThingType?
+            val bundle = /*if (savedInstanceState == null) intent?.extras else savedInstanceState*/ intent?.extras
+            itemName = bundle?.getString(ITEM_NAME)
+            itemType = bundle?.getSerializable(ITEM_TYPE) as ThingType?
+//            itemVal = bundle?.getString(ITEM_VAL)
         }
 
-        realm = Realm.getDefaultInstance()
-        editKeyName = findViewById<EditText>(R.id.edit_key_name)
-        editKeyValue = findViewById<EditText>(R.id.edit_key_val)
-        radioType = findViewById<RadioGroup>(R.id.radiogroup_type)
-
-        val managedThing: Thing? = if (itemId != 0L) fillFormWithThing(itemId) else null
-        if (itemId == 0L && (itemName != null && itemType != null)) fillFormWithItemTypeAndName(itemName!!, itemType!!)
+        editKeyName = findViewById(R.id.edit_key_name)
+        editKeyValue = findViewById(R.id.edit_key_val)
+        radioType = findViewById(R.id.radiogroup_type)
 
         val btnSave = findViewById<Button>(R.id.btn_save)
+
+        if (itemId != 0L) {
+            btnSave.setEnabled(false)
+            fillFormWithThing(itemId, btnSave)
+        } else if (itemName != null && itemType != null) {
+            fillFormWithItemTypeAndName(itemName!!, itemVal!!, itemType!!)
+        }
+
+
         btnSave.setOnClickListener({
-            val name = editKeyName.text.toString()
-            val value = editKeyValue.text.toString()
-            val checkedBtnId = radioType.checkedRadioButtonId
-
-            if (managedThing != null) {
-                updateThing(managedThing, name, checkedBtnId, value)
-            } else {
-                createNewThing(checkedBtnId, name, value)
-            }
-
+            createNewThing(itemId, radioType.checkedRadioButtonId, editKeyName.text.toString(), editKeyValue.text.toString())
             Toast.makeText(it.context, "Saved!", Toast.LENGTH_SHORT).show()
             finish()
         })
     }
 
-    private fun createNewThing(checkedBtnId: Int, name: String, value: String) {
+//    override fun onSaveInstanceState(outState: Bundle?) {
+//        super.onSaveInstanceState(outState)
+//        val name = editKeyName.text?.toString()
+//        val value = editKeyValue.text?.toString()
+//        outState?.putString(ITEM_NAME, if (name.isNullOrEmpty()) "" else name)
+//        outState?.putString(ITEM_VAL, if (value.isNullOrEmpty()) "" else value)
+//    }
+
+    private fun createNewThing(itemId: Long, checkedBtnId: Int, name: String, value: String) {
         val thing: Thing =
                 when (checkedBtnId) {
                     R.id.radio_bool ->
-                        Thing(0, name, "", -1, value.toBoolean(), Date(), "BOOL")
+                        Thing(itemId, name, "", -1, value.toBoolean(), Date(), "BOOL")
                     R.id.radio_int ->
-                        Thing(0, name, "", value.toInt(), false, Date(), "INT")
+                        Thing(itemId, name, "", value.toInt(), false, Date(), "INT")
                     else ->
-                        Thing(0, name, value, -1, false, Date(), "STRING")
+                        Thing(itemId, name, value, -1, false, Date(), "STRING")
                 }
 
         Log.i(TAG, thing.toString())
 
-        realm.executeTransaction {
-            if (thing.id == 0L) {
-                val id: Number? = it.where(Thing::class.java).max("id")
-                val nextId = if (id == null) 1 else (id.toLong() + 1)
-                thing.id = nextId
-            }
-            it.copyToRealm(thing)
-        }
+        dao?.insertThing(thing)
     }
 
     private fun updateThing(savedThing: Thing, name: String, checkedBtnId: Int, value: String) {
-        realm.executeTransaction {
-            savedThing.name = name
-            when (checkedBtnId) {
-                R.id.radio_bool -> savedThing.boolVal = value.toBoolean()
-                R.id.radio_int -> savedThing.intVal = value.toInt()
-                R.id.radio_string -> savedThing.strVal = value
-            }
-        }
+        val type =
+           when(checkedBtnId) {
+               R.id.radio_bool -> ThingType.BOOL
+               R.id.radio_int -> ThingType.INT
+               else -> ThingType.STRING
+           }
+
+        dao?.updateThing(savedThing, name, type, value)
     }
 
-    private fun fillFormWithThing(itemId: Long?) : Thing? {
-        var record: Thing? = null
+    private fun fillFormWithThing(itemId: Long?, btnSave: Button) {
+        if (itemId == null) return
 
-        if (itemId == null) return record
-
-        realm.executeTransaction {
-            record = it.where(Thing::class.java).equalTo("id", itemId).findFirst()
-            editKeyName.setText(record?.name)
-            var checkedBtnId : Int
-            when (record?.type) {
-                ThingType.BOOL -> {
-                    editKeyValue.setText(record?.boolVal.toString())
-                    checkedBtnId = R.id.radio_bool
-                }
-                ThingType.INT -> {
-                    editKeyValue.setText(record?.intVal.toString())
-                    checkedBtnId = R.id.radio_int
-                }
-                else -> {
-                    editKeyValue.setText(record?.strVal)
-                    checkedBtnId = R.id.radio_string
+        val finderCallback = fun(record: Thing?) {
+            if (record != null) {
+                runOnUiThread {
+                    editKeyName.setText(record?.name)
+                    var checkedBtnId : Int
+                    when (record?.type) {
+                        ThingType.BOOL -> {
+                            editKeyValue.setText(record?.boolVal.toString())
+                            checkedBtnId = R.id.radio_bool
+                        }
+                        ThingType.INT -> {
+                            editKeyValue.setText(record?.intVal.toString())
+                            checkedBtnId = R.id.radio_int
+                        }
+                        else -> {
+                            editKeyValue.setText(record?.strVal)
+                            checkedBtnId = R.id.radio_string
+                        }
+                    }
+                    radioType.check(checkedBtnId)
+                    btnSave.setEnabled(true)
                 }
             }
-            radioType.check(checkedBtnId)
         }
 
+        dao?.findThing(itemId, finderCallback);
 
-        return record
     }
 
-    private fun fillFormWithItemTypeAndName(itemName: String, itemType: ThingType) {
+    private fun fillFormWithItemTypeAndName(itemName: String, itemVal: String, itemType: ThingType) {
         editKeyName.setText(itemName)
-        editKeyValue.setText("")
+        editKeyValue.setText(itemVal)
 
         var checkedBtnId : Int =
                 when (itemType) {
