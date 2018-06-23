@@ -63,6 +63,7 @@ class ThingDetailViewHolder(val cell: View) : RecyclerView.ViewHolder(cell) {
         itemView.findViewById<ImageButton>(R.id.btn_save).setOnClickListener {
             val intent = Intent(act,  DataEntryActivity::class.java)
             intent.putExtra(DataEntryActivity.ITEM_ID, t.id)
+            intent.putExtra(DataEntryActivity.ITEM_CREATE_DATE, t.date)
             act.startActivity(intent)
         }
     }

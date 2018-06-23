@@ -4,7 +4,7 @@ import io.realm.Realm
 import org.bitxbit.thingtracker.R
 
 class Dao {
-    fun insertThing(thing: Thing) {
+    fun insertThing(thing: Thing, callback: () -> Unit) {
         val realm = Realm.getDefaultInstance()
         try {
             realm.executeTransactionAsync(Realm.Transaction() {
@@ -14,29 +14,14 @@ class Dao {
                     thing.id = nextId
                 }
                 it.copyToRealmOrUpdate(thing)
+            }, Realm.Transaction.OnSuccess() {
+                callback()
             })
         } finally {
             realm.close()
         }
     }
 
-    fun updateThing(savedThing: Thing, name: String, type: ThingType, value: String) {
-        savedThing.name = name
-        when (type) {
-            ThingType.BOOL -> savedThing.boolVal = value.toBoolean()
-            ThingType.INT -> savedThing.intVal = value.toInt()
-            ThingType.STRING -> savedThing.strVal = value
-
-        }
-        val realm = Realm.getDefaultInstance()
-        try {
-            realm.executeTransaction {
-                it.copyToRealm(savedThing)
-            }
-        } finally {
-            realm.close()
-        }
-    }
 
     fun findThing(itemId: Long?, finderCallback: ((Thing?) -> Unit)) {
         val realm = Realm.getDefaultInstance()
