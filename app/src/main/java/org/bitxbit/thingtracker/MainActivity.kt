@@ -2,20 +2,14 @@ package org.bitxbit.thingtracker
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Rect
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-//import android.support.v7.widget.helper.ItemTouchHelper
-import android.view.View
 import io.realm.Realm
-//import io.realm.RealmConfiguration
 import io.realm.Sort
 import org.bitxbit.thingtracker.adapter.ThingRealmAdapter
 import org.bitxbit.thingtracker.model.Thing
-//import org.bitxbit.thingtracker.model.ThingType
-import java.util.*
 
 class MainActivity : Activity() {
 
@@ -56,9 +50,4 @@ class MainActivity : Activity() {
         }
     }
 
-    class SpaceItemDecoration : RecyclerView.ItemDecoration() {
-        override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State?) {
-            outRect.set(0, 0, 0, 24)
-        }
-    }
 }

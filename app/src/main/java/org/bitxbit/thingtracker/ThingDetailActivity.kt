@@ -22,6 +22,7 @@ class ThingDetailActivity : Activity() {
         val fabAddDetail = findViewById<FloatingActionButton>(R.id.fab_add_detail)
         val recycler = findViewById<RecyclerView>(R.id.recycler_thing_details)
         recycler.layoutManager = LinearLayoutManager(this)
+        recycler.addItemDecoration(SpaceItemDecoration())
         realm = Realm.getDefaultInstance()
 
         val thingName = intent?.getStringExtra("thingName")
